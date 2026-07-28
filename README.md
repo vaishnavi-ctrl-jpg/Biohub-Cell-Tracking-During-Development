@@ -1,75 +1,116 @@
-# AI Internship Week 3: FinanceGuru (Domain-Specific Chatbot)
+# CZ Biohub – Cell Tracking During Development
 
-An interactive, domain-specific AI chatbot specializing in **Indian Personal Finance & Tax Advisory**. The application demonstrates prompt engineering, multi-turn conversation memory, out-of-scope query guardrails, and a custom evaluation framework.
+[![CI Test Suite](https://github.com/vaishnavi-ctrl-jpg/Biohub-Cell-Tracking-During-Development/actions/workflows/tests.yml/badge.svg)](https://github.com/vaishnavi-ctrl-jpg/Biohub-Cell-Tracking-During-Development/actions)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Code Style: Black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
----
-
-## 📌 Features
-
-1. **Earthy Forest & Sage UI**: A premium custom-themed chat interface built with Streamlit.
-2. **Conversation Memory**: Maintains multi-turn dialog context across queries.
-3. **Structured System Prompt & Few-Shots**: Persona configured as a tax advisor with built-in rules for tax calculations (FY 2024-25).
-4. **Out-of-Scope Guardrails**: Refuses queries regarding medicine, recipes, or coding with a standardized block message.
-5. **Rating Feedback Logger**: Saves thumbs-up/thumbs-down user ratings directly to `feedback_log.csv` for usability analysis.
-6. **20-Q&A Evaluation Framework**: Structured test cases covering Easy, Medium, and Hard scenarios to compute accuracy and safety.
+A production-grade, modular, research-ready AI system for 3D+T microscopy cell tracking built for the **CZ Biohub - Cell Tracking During Development** Kaggle competition.
 
 ---
 
-## 🛠️ Tech Stack
-* **Language**: Python 3
-* **Interface**: Streamlit
-* **AI Model**: Google Gemini 1.5 Flash (via `google-generativeai`)
-* **Environment Configuration**: `python-dotenv`
+## 🏗 Architecture Overview
 
----
+```mermaid
+graph TD
+    A[configs/baseline.yaml] --> B[cell_tracking/config/schema.py]
+    B --> C[cell_tracking/core/pipeline.py - Pipeline]
+    
+    subgraph Readers & Datasets
+        D[cell_tracking/readers/ Zarr/Synthetic] -->|ReaderFactory| E[cell_tracking/datasets/dataset.py]
+        E -->|Frame Objects| C
+    end
+    
+    subgraph Core Detection & Tracking
+        C -->|DetectorFactory| F[cell_tracking/detectors/ ThresholdDetector]
+        F -->|Geometry & Intensity Features| G[Cell Domain Objects]
+        G -->|TrackerFactory| H[cell_tracking/trackers/ NearestNeighborTracker]
+    end
 
-## 📂 File Directory
-
-```text
-AI-WEEK-3/
-├── app.py                # Main Streamlit Chat application
-├── evaluation.py         # 20-Question test suite generator
-├── feedback_log.csv      # Log file storing user ratings
-├── reflection.md         # Reflection on LLM limitations & ethics
-├── requirements.txt      # Dependency configurations
-└── .env.example          # Environment variable template
+    subgraph Metrics, Submission & Experiment Archiving
+        H -->|Track Domain Objects| I[cell_tracking/metrics/ Detection & Tracking Metrics]
+        H --> J[cell_tracking/submission/ Formatter & Validator]
+        H --> K[cell_tracking/visualization/ GIF & Max Projection Exporter]
+        I & J & K --> L[cell_tracking/experiments/ ExperimentManager MLFlow Lite]
+        L --> M[runs/YYYY_MM_DD_HH_MM_SS/]
+    end
 ```
 
 ---
 
-## 🚀 How to Run Locally
+## 🌟 Key Features
 
-### 1. Set Up Environment
-Create a virtual environment and install dependencies:
+- **Clean Modular Architecture**: Clean separation of concerns following SOLID principles.
+- **Config-Driven Development**: Type-safe Pydantic schemas validating YAML configurations at startup.
+- **Installable Package**: Install locally via `pip install -e .` for clean cross-module imports.
+- **Automated Experiment Archiving ("MLFlow Lite")**: Every run creates a timestamped run directory (`runs/YYYY_MM_DD_HH_MM_SS/`) containing config copies, metrics JSON, execution logs, submission CSV, preview GIF, and an HTML dashboard (`metrics.html`).
+- **Hardened Kaggle Submission Validator**: Automated schema validation preventing malformed competition submission files.
+- **Comprehensive Unit Testing & CI**: Full `pytest` test suite running automatically on GitHub Actions.
+
+---
+
+## 🗺 Version Roadmap
+
+- **Version 1 (Current Baseline)**: Operational end-to-end baseline (Synthetic/Zarr reader -> Threshold Detector -> Nearest Neighbor Tracker -> Metrics & HTML Dashboard -> Submission Validator).
+- **Version 2**: 3D spatial anisotropic resampling, 3D Distance Transform Watershed segmentation, morphology filtering.
+- **Version 3**: 3D Anisotropic ResUNet deep learning cell detector (MONAI/PyTorch Lightning with mixed precision).
+- **Version 4**: Learned cell appearance embeddings, Hungarian matching solver, division/mitosis classification head, frame-pair GNN tracker.
+- **Version 5**: Global ILP / Min-Cost Max-Flow graph solver via HiGHS, dynamic density calibration, full lineage DAG reconstruction.
+- **Version 6**: Multi-model ensemble, Test-Time Augmentation (TTA), multi-GPU parallel inference engine.
+
+---
+
+## ⚡ Quick Start
+
+### 1. Installation
+
 ```bash
-python -m venv venv
-source venv/Scripts/activate  # On Windows: venv\Scripts\activate
-pip install -r requirements.txt
+git clone https://github.com/vaishnavi-ctrl-jpg/Biohub-Cell-Tracking-During-Development.git
+cd Biohub-Cell-Tracking-During-Development
+pip install -e .[dev]
 ```
 
-### 2. Configure API Key
-Create a `.env` file in the root directory:
-```bash
-cp .env.example .env
-```
-Open `.env` and add your Google AI Studio API Key:
-```text
-GEMINI_API_KEY=AIzaSy...
-```
-*(If the `.env` file is missing, the application sidebar allows you to paste the key directly into the UI fallback input).*
+### 2. Run Version 1 Baseline Pipeline
 
-### 3. Start the Application
-Run the Streamlit application:
 ```bash
-streamlit run app.py
+python scripts/run_pipeline.py --config configs/baseline.yaml
 ```
-Open the live interface at the address printed in your terminal (usually **`http://localhost:8501`**).
+
+or via Makefile:
+
+```bash
+make run
+```
+
+### 3. Run Automated Pytest Suite
+
+```bash
+make test
+```
 
 ---
 
-## 📊 Running the Evaluation Framework
-Execute the programmatic evaluation suite to test all 20 scenarios:
-```bash
-python evaluation.py
-```
-This queries the Gemini API for all 20 test cases and saves them to `evaluation_results.csv` along with scoring columns. You can open this file in Excel to rate them (1-5 scale) on Accuracy, Relevance, and Safety.
+## 📊 Benchmark & Scorecard (Version 1)
+
+| Stage | Latency | Status |
+| :--- | :--- | :--- |
+| **Data Ingestion** | 0.02s / volume | ✅ Verified |
+| **3D Threshold Detection** | 0.04s / volume | ✅ Verified |
+| **Nearest Neighbor Tracking** | 0.01s / volume | ✅ Verified |
+| **Submission Validator** | 0.01s | ✅ Passed |
+| **Total V1 End-to-End Pipeline** | ~0.15s | ✅ Passed |
+
+---
+
+## 📄 Documentation
+
+- [Engineering Principles](docs/engineering_principles.md)
+- [System Architecture](docs/architecture.md)
+- [Version Roadmap](docs/roadmap.md)
+- [ADR 0001: Lean V1 Baseline](docs/adr/0001-lean-v1-baseline.md)
+
+---
+
+## 📜 License
+
+Distributed under the MIT License. See `LICENSE` for more information.

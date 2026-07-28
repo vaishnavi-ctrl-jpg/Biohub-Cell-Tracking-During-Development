@@ -1,0 +1,53 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# Data & Large Files
+data/
+*.zarr/
+*.h5/
+*.hdf5/
+*.tiff/
+*.tif/
+
+# Experiment Runs & Transient Outputs
+runs/*
+!runs/.gitkeep
+outputs/*
+!outputs/.gitkeep
+
+# IDEs & System
+.vscode/
+.idea/
+.DS_Store
+*.swp
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+.next/
+node_modules/

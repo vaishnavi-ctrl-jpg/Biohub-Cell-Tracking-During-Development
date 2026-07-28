@@ -1,0 +1,32 @@
+experiment_name: "v1_baseline"
+seed: 42
+output_dir: "runs"
+
+dataset:
+  reader_type: "synthetic"
+  path: "data/raw/synthetic"
+  num_frames: 10
+  shape_z: 16
+  shape_y: 64
+  shape_x: 64
+  num_cells: 6
+  drift_scale: 2.5
+
+detector:
+  name: "threshold"
+  threshold_value: 0.35
+  gaussian_sigma: 1.0
+  min_volume_voxels: 5
+  max_volume_voxels: 5000
+
+tracker:
+  name: "nearest_neighbor"
+  max_linking_distance: 20.0
+  weight_distance: 1.0
+
+evaluation:
+  enabled: true
+  match_distance_threshold: 10.0
+
+submission:
+  output_filename: "submission.csv"
