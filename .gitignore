@@ -39,6 +39,11 @@ runs/*
 outputs/*
 !outputs/.gitkeep
 
+# Environment Variables & Keys
+.env
+.env.*
+!.env.example
+
 # IDEs & System
 .vscode/
 .idea/
@@ -51,3 +56,4 @@ htmlcov/
 .ruff_cache/
 .next/
 node_modules/
+
